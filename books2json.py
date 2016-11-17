@@ -15,7 +15,7 @@ class BookMarks(object):
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
 <TITLE>Bookmarks</TITLE>
 <H1>Bookmarks</H1>\n'''
-    DT = u'<DT><A HREF="{href}" ADD_DATE="{add_date}" ICON="{icon}">{text}</A>\n'.format
+    DT = u'<DT><A HREF="{href}" ADD_DATE="{add_date}" ICON="{icon}" TAGS="{tags}">{text}</A>\n'.format
     DL = u'<DL><p>\n{0}</DL><p>\n'.format
     TITLE = u'<DT><H3 ADD_DATE="{add_date}" LAST_MODIFIED="{last_modified}" PERSONAL_TOOLBAR_FOLDER="{personal_toolbar_folder}">{text}</H3>\n'.format
 
@@ -91,7 +91,8 @@ class BookMarks(object):
                     href=t.get("href"),
                     add_date=t.get("add_date"),
                     icon=t.get("icon"),
-                    text=text
+                    text=text,
+                    tags=t.get("tags", "hello")
                 )
 
     def __dict2list(self, json_data):
@@ -124,17 +125,32 @@ class BookMarks(object):
 
         return filter(lambda x: len(x[1]) > 1, duplication.items())
 
+    def del_bookmark(self, bkm_pth):
+        for _bk_path in bkm_pth[1:]: exec u'del {}'.format(self.__get_bkm_real_pth(_bk_path))
+        return self
+
+    def get_bookmark(self, bkm_pth):
+        return eval(self.__get_bkm_real_pth(bkm_pth))
+
+    def set_bookmark(self, bkm_pth, data):
+        exec self.__get_bkm_real_pth(bkm_pth) + "={}".format(data)
+
+    def update_bookmark(self, bkm_pth, data):
+        exec self.__get_bkm_real_pth(bkm_pth) + ".update({})".format(data)
+
+    def __get_bkm_real_pth(self, bkm_pth):
+        a = u'self.json_data'
+        for t in bkm_pth.rsplit(self.delimiter):
+            a += u'[u"{}"]'.format(t)
+        return a
+
     def dedup(self):
         '''
         对书签进行去重，保留一个
         :return:
         '''
         for _, bk_path in self.get_duplication():
-            for _bk_path in bk_path[1:]:
-                a = u'self.json_data'
-                for t in _bk_path.rsplit(self.delimiter):
-                    a += u'[u"{}"]'.format(t)
-                exec u'del {}'.format(a)
+            self.del_bookmark(bk_path)
         return self
 
 
