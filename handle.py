@@ -64,7 +64,7 @@ class TestHandler(web.RequestHandler):
 
 class BKHandler(web.RequestHandler):
     from books2json import BookMarks
-    bk = BookMarks('./files/bkm.html').dedup()
+    bk = BookMarks('./files/bookmarks.html')
 
     def get(self, pth=None):
 

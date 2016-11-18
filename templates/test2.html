@@ -4,13 +4,6 @@
 
 {% block header %}
 <style>
-    .ui.vertical.menu {
-
-    }
-
-    .column {
-
-    }
 </style>
 {% end %}
 
@@ -24,26 +17,31 @@
 </div>
 
 
-<div class="ui middle aligned six column  cards">
+<div class="ui grid container">
+    <div class="four wide column"></div>
+    <div class="four wide column"></div>
+    <div class="four wide column"></div>
+    <div class="four wide column"></div>
+    <div class="four wide column"></div>
+    <div class="four wide column"></div>
+    <div class="four wide column"></div>
+    <div class="four wide column"></div>
+</div>
 
+<!--<div class="ui middle aligned six column  grid">-->
+<!--<div class="ui six column  grid">-->
+<div class="ui cards">
     <div class="column">
-        <div class="ui vertical menu ">
-            <div class="item">
-                <div class="ui transparent icon input">
-                    <input type="text" placeholder="Search mail...">
-                    <i class="search icon"></i>
+        <div class="ui segment">
+            <div class="ui cards">
+                <div class="card">
+                    <div class="ui segment"><a class="ui orange label">Orange</a></div>
+                    <div class="ui segment"><a class="ui orange label">Orange</a></div>
+                </div>
+                <div class="card">
+                    <div class="ui segment"><a class="ui orange label">Orange</a></div>
                 </div>
             </div>
-            <a class="active teal item">Inbox
-                <div class="ui teal left pointing label">1</div>
-            </a>
-            <a class="item">Spam
-                <div class="ui label">51</div>
-            </a>
-            <a class="item">Updates
-                <div class="ui label">1</div>
-            </a>
-
         </div>
     </div>
     <div class="column">

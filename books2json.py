@@ -25,6 +25,7 @@ class BookMarks(object):
         with open(bookmark_path, "r") as f:
             _d = f.read().replace("<p>", "")
             _d = _d.replace("<DT>", "</DT><DT>")
+            _d = _d.replace("<DL>", "</DT><DL>")
             bs = BeautifulSoup(_d, "lxml")
             self.dl = bs.dl
 
@@ -130,6 +131,9 @@ class BookMarks(object):
         return self
 
     def get_bookmark(self, bkm_pth=None, folder=None, link=None, depth=1):
+
+        self.json_data = self.json_data or self.to_dict()
+
         if not bkm_pth:
             return [text for text, t in self.json_data.items() if t.get("title")]
 
@@ -139,7 +143,7 @@ class BookMarks(object):
                         "bkm_pth": bkm_pth + self.delimiter + text,
                         "folder": True,
                         "href": False,
-                        "count": len(t.items())-1
+                        "count": len(t.items()) - 1
                     } for text, t in bkms.items() if t.get("title")]
         elif link and not folder:
             return [{
@@ -153,7 +157,7 @@ class BookMarks(object):
                         "bkm_pth": bkm_pth + self.delimiter + text,
                         "href": t.get("href") or False,
                         "folder": True if t.get("title") else False,
-                        "count": len(t.items())-1 if t.get("title") else 0,
+                        "count": len(t.items()) - 1 if t.get("title") else 0,
                     } for text, t in bkms.items()]
 
     def set_bookmark(self, bkm_pth, data):

@@ -14,8 +14,11 @@
     </div>
 
 
-    <div class="ui middle aligned six column cards">
-
+    <!--<div class="ui middle aligned six column grid">-->
+    <!--<div class="ui six column grid">-->
+    <div class="ui cards" id="bk-link">
+    </div>
+    <div class="ui cards">
         <div class="column">
             <div class="ui vertical menu">
                 <div class="item">
@@ -74,7 +77,7 @@
         $(that).parent().find("a").removeClass("teal active");
         $(that).addClass("teal active");
 
-        $(that).parent().parent().nextAll().remove();
+
         $.get("/bk/{0}".format($(that).attr("bkm-data").trim()), function (data, status) {
             console.log(status);
             console.log(JSON.parse(data));
@@ -86,10 +89,8 @@
                 let href = bkm.href;
                 let folder = bkm.folder;
                 let count = bkm.count;
-
-                console.log(bkm);
                 if (folder) {
-                    folder_data += '<a class="item" bkm-data="{0}">{1}<div class="ui label">{2}</div></a>'.format(
+                    folder_data += '<a class="item" bkm-data="{0}">{1}<div class="ui red circular label">{2}</div></a>'.format(
                             bkm_pth,
                             bkm_pth.split(delimiter).pop(),
                             count
@@ -100,12 +101,14 @@
 
             var link_data = '';
             for (var bkm of JSON.parse(data)) {
-                let bkm_pth = bkm.bkm_pth.split(delimiter).pop();
+                let bkm_pth = bkm.bkm_pth.split(delimiter).pop().substring(0, 30);
                 let href = bkm.href;
                 let folder = bkm.folder;
 
                 if (!folder && bkm_pth != 'title') {
-                    link_data += '<a class="item" bkm-data="{0}" href="{1}" target="_blank">{2}</a>'.format(
+                    link_data += `
+<a class="ui orange label" bkm-data="{0}" href="{1}" target="_blank">{2}</a>
+`.format(
                             bkm.bkm_pth,
                             href,
                             bkm_pth
@@ -113,16 +116,25 @@
                 }
             }
 
-            var _data = '<div class="column"><div class="ui vertical menu">{0}</div></div>';
+            var link_data1 = link_data;
+
             if (link_data != '') {
-                link_data = _data.format(link_data)
+//                link_data = '<div class="ui cards"><div class="card"><div class="content"><div class="ui segment">{0}</div></div></div></div>'.format(link_data)
+//                link_data = '<div class="ui cards"><div class="card"><div class="content">{0}</div></div></div>'.format(link_data)
+                link_data = '<div class="card" style="width: 50%"><div class="content">{0}</div></div>'.format(link_data);
+
+                link_data1 = '<div class="card" style="width: 200%"><div class="content">{0}</div></div>'.format(link_data1);
             }
+
             if (folder_data != '') {
-                folder_data = _data.format(folder_data)
+                folder_data = '<div class="column"><div class="ui vertical menu">{0}</div></div>'.format(folder_data)
             }
 
-
+            $(that).parent().parent().nextAll().remove();
             $(that).parent().parent().parent().append(folder_data + link_data);
+
+            $("#bk-link").empty();
+            $("#bk-link").append(link_data1);
             $(that).parent().parent().nextAll().find("a").click(function () {
                 click1(this);
             });
