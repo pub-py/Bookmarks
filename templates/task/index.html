@@ -1,0 +1,253 @@
+{% extends "../base.html" %}
+
+{% block title %}home{% end %}
+
+
+{% block body %}
+
+{% module Sidebar() %}
+{% module Menubar() %}
+
+
+<div class="pusher">
+
+    <div class="ui vertical stripe quote segment">
+
+        <div class="ui container">
+            <div class="introduction">
+                <div class="ui hidden divider"></div>
+                <div class="ui hidden divider"></div>
+                <div class="ui hidden divider"></div>
+                <div class="ui hidden divider"></div>
+            </div>
+        </div>
+
+        <div class="ui grid">
+            <div class="four wide column">
+                <div class="ui vertical fixed menu">
+                    <div class="ui hidden divider"></div>
+                    <div class="ui hidden divider"></div>
+                    <div class="ui hidden divider"></div>
+                    <a class="item ui top attached inverted header">
+                        所有项目
+                        <div class="ui teal left pointing label">{{ len(tasks) }}</div>
+                    </a>
+
+                    {% for project,value in tasks %}
+                    <a class="teal item " data-tab="{{ project }}">
+                        {{ project }}
+                        <div class="ui teal left pointing label">{{ len(value) }}</div>
+                    </a>
+                    {% end %}
+                    <div class="item">
+                        <div class="ui transparent icon input">
+                            <input type="text" placeholder="Search mail...">
+                            <i class="search icon"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="twelve wide stretched column">
+
+                {#                <div class="ui segment">#}
+                <button onclick="$('.ui.modal.task.add').modal('show');" class="ui green button">添加任务</button>
+                {#                </div>#}
+
+                {% for project,task in tasks %}
+                <div class="ui tab segment" data-tab="{{ project }}">
+
+                    {% for t in task %}
+                    <div class="ui segment">
+                        <div class=" ui top attached inverted header">
+                            {{ t.get("name") }}
+                        </div>
+                        <div class="content">
+                            <div>
+                                 <pre>
+                                     <code class="bash">
+                                         Task Name -- {{ t.get("name") }}
+                                            {{ t.get("content") }}
+                                     </code>
+
+                                 </pre>
+                            </div>
+                        </div>
+
+                        <div class="ui header">
+                            <button onclick="onDelete('/task/{{ t.get("id") }}')" class="ui red button">删除
+                            </button>
+                            <button onclick="onUpdate('/task/{{ t.get("id") }}');"
+                                    class="ui yellow button">
+                                修改
+                            </button>
+                            <button onclick="onCopy('/task/{{ t.get("id") }}');" class="ui pink button">
+                                复制
+                            </button>
+                        </div>
+                    </div>
+                    {% end %}
+                </div>
+                {% end %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="ui modal task add">
+    <i class="close icon"></i>
+    <div class="header">
+        添加主机
+    </div>
+
+    <div class="content">
+        <form class="ui form" method="POST" action="/task">
+            <div class="field">
+                <label>Task Name</label>
+                <input type="text" name="name"
+                       placeholder="任务名字">
+            </div>
+            <div class="field">
+                <label>Content</label>
+                <textarea type="text" name="content" placeholder="任务内容"></textarea>
+            </div>
+            <div class="field">
+                <label>Project Name</label>
+                <input type="text" name="project" placeholder="项目名字">
+            </div>
+
+            <button class="ui button" type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+
+
+<div class="ui modal task update">
+    <i class="close icon"></i>
+    <div class="header">
+        修改主机
+    </div>
+
+    <div class="content">
+        <form class="ui form">
+            <div class="field">
+                <label>Task Name</label>
+                <input type="text" name="name"
+                       placeholder="任务名字">
+            </div>
+            <div class="field">
+                <label>Content</label>
+                <textarea type="text" name="content" placeholder="任务内容"></textarea>
+            </div>
+            <div class="field">
+                <label>Project Name</label>
+                <input type="text" name="project" placeholder="项目名字">
+            </div>
+        </form>
+        <div class="header">
+            <button class="ui button" onclick='onUpdateSubmit()'>Submit</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    hljs.initHighlightingOnLoad();
+
+    function onDelete(url) {
+        $.ajax({
+            type: "DELETE",
+            url: url,
+            context: document.body,
+            success: function (data) {
+                console.log(data);
+                window.location.href = "/task"
+                {#                $(this).addClass("done");#}
+            }
+        }).done(function () {
+            $(this).addClass("done");
+        });
+    }
+
+    function onUpdate(url) {
+        $('.ui.modal.task.update').modal('show');
+
+        $.ajax({
+            type: "GET",
+            url: url + "?data_type=json",
+            context: document.body,
+            success: function (t) {
+                $('.ui.modal.task.update input[name=name]').val(t.name);
+                $('.ui.modal.task.update input[name=content]').innerText = t.content;
+                $('.ui.modal.task.update textarea').val(t.content);
+                $('.ui.modal.task.update input[name=project]').val(t.project);
+            }
+        }).done(function () {
+        });
+        $('.ui.modal.task.update').attr("action", url);
+    }
+    function onUpdateSubmit() {
+        task = $('.ui.modal.task.update');
+        $.ajax({
+            type: "PATCH",
+            url: task.attr("action") + "?" + $('.ui.modal.task.update form').serialize(),
+            context: document.body,
+            success: function (data) {
+                if (data == "ok") {
+                    window.location.href = "/task"
+                } else {
+                    window.location.href = "/"
+                }
+            }
+        }).done(function () {
+            task.modal('hide')
+            task.attr("action", disable);
+        });
+    }
+
+    function onCopy(url) {
+        $.ajax({
+            type: "PUT",
+            url: url,
+            context: document.body,
+            success: function (data) {
+                if (data == "ok") {
+                    window.location.href = "/task"
+                } else {
+                    window.location.href = "/"
+                }
+            }
+        }).done(function () {
+        });
+    }
+
+    function run_task(pname, ptask) {
+        console.log(ws._listeners);
+        ws.emit(
+                "task",
+                JSON.stringify({
+                    project: pname,
+                    task: ptask
+                }),
+                function (msg) {
+                    var data = JSON.parse(msg);
+
+                    console.log(msg);
+
+                    $title = '<div class="title"><i class="dropdown icon"></i>' + data.name + '</div>';
+                    $content = '<div class="content"><p class="transition hidden"><pre><code class="bash hljs">' +
+                            data.data +
+                            '</code></pre></p></div>'
+
+                    $(".ui.segment.taskMessage .ui.styled.fluid.accordion").append($title);
+                    $(".ui.segment.taskMessage .ui.styled.fluid.accordion").append($content);
+
+                    hljs.initHighlightingOnLoad();
+                }
+        );
+    }
+</script>
+{% end %}
+

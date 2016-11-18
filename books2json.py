@@ -21,7 +21,7 @@ class BookMarks(object):
 
     def __init__(self, bookmark_path):
         self.json_data = {}
-        self.delimiter = "-yy-"
+        self.delimiter = "-**-"
         with open(bookmark_path, "r") as f:
             _d = f.read().replace("<p>", "")
             _d = _d.replace("<DT>", "</DT><DT>")
@@ -129,8 +129,32 @@ class BookMarks(object):
         for _bk_path in bkm_pth[1:]: exec u'del {}'.format(self.__get_bkm_real_pth(_bk_path))
         return self
 
-    def get_bookmark(self, bkm_pth):
-        return eval(self.__get_bkm_real_pth(bkm_pth))
+    def get_bookmark(self, bkm_pth=None, folder=None, link=None, depth=1):
+        if not bkm_pth:
+            return [text for text, t in self.json_data.items() if t.get("title")]
+
+        bkms = eval(self.__get_bkm_real_pth(bkm_pth))
+        if folder and not link:
+            return [{
+                        "bkm_pth": bkm_pth + self.delimiter + text,
+                        "folder": True,
+                        "href": False,
+                        "count": len(t.items())-1
+                    } for text, t in bkms.items() if t.get("title")]
+        elif link and not folder:
+            return [{
+                        "bkm_pth": bkm_pth + self.delimiter + text,
+                        "href": t.get("href"),
+                        "folder": False,
+                        "count": 0,
+                    } for text, t in bkms.items() if not t.get("title")]
+        else:
+            return [{
+                        "bkm_pth": bkm_pth + self.delimiter + text,
+                        "href": t.get("href") or False,
+                        "folder": True if t.get("title") else False,
+                        "count": len(t.items())-1 if t.get("title") else 0,
+                    } for text, t in bkms.items()]
 
     def set_bookmark(self, bkm_pth, data):
         exec self.__get_bkm_real_pth(bkm_pth) + "={}".format(data)

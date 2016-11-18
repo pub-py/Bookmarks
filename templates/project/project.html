@@ -1,0 +1,280 @@
+{% extends "../base.html" %}
+
+{% block title %}home{% end %}
+
+
+{% block body %}
+
+{% module Sidebar() %}
+
+{% module Menubar() %}
+
+
+<div class="pusher">
+    <div class="ui hidden divider"></div>
+    <div class="ui hidden divider"></div>
+    <div class="ui hidden divider"></div>
+    <div class="ui hidden divider"></div>
+
+    <div class="ui grid">
+        {#        <div class="eight wide column">#}
+        {#        </div>#}
+
+        <div class="wide stretched column">
+            <div class="ui segment">
+                <div class="ui top attached inverted header">
+                    {{ project.name }}
+                </div>
+
+                <div class="ui segment">
+                    <div class="ui header">
+                        description
+                    </div>
+                    <div class="content">
+                        {{ project.description or "项目描述" }}
+                    </div>
+                </div>
+
+                {% if project.host_group %}
+                <div class="ui segment">
+                    <div class="ui header">
+                        host_group
+                    </div>
+                    <div class="content">
+                        {% for hg in project.host_group.split(" ") %}
+                        <a class="ui red tag label" href="/host">
+                            {{ hg }}
+                        </a>
+                        {% end %}
+                    </div>
+                </div>
+                {% end %}
+
+                {% if project.host_names %}
+                <div class="ui segment">
+                    <div class="ui header">
+                        host_names
+                    </div>
+                    <div class="content">
+                        {% for hn in project.host_names.split(" ") %}
+                        <a class="ui red tag label">
+                            {{ hn }}
+                        </a>
+                        {% end %}
+                    </div>
+                </div>
+                {% end %}
+
+                {% if project.tasks %}
+                <div class="ui segment">
+                    <div class="ui header">
+                        tasks
+                    </div>
+                    <div class="content">
+                        {% for pt in project.tasks.split(",") %}
+                        <a class="ui red label" onclick=run_task('{{ project.name }}','{{ pt }}')>
+                            <i class="hand pointer icon"></i>
+                            {{ pt }}
+                        </a>
+                        {% end %}
+                    </div>
+                </div>
+                {% end %}
+
+
+                <div class="ui header">
+                    <button onclick="$('.ui.modal.project.add').modal('show');" class="ui blue button">添加项目
+                    </button>
+                    <button onclick="onDelete('/project/{{ project.id }}')" class="ui red button">删除
+                    </button>
+                    <button onclick="onUpdate('/project/{{ project.id }}');"
+                            class="ui yellow button">
+                        修改
+                    </button>
+                    <button onclick="onCopy('/project/{{ project.id }}');" class="ui pink button">
+                        复制
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="ui  segment taskMessage">
+        <div class="ui styled fluid accordion">
+        </div>
+    </div>
+</div>
+
+
+<div class="ui modal project add">
+    <i class="close icon"></i>
+    <div class="header">
+        添加项目
+    </div>
+
+    <div class="content">
+        <form class="ui form" method="POST" action="/project">
+            <div class="field">
+                <label>Project Name</label>
+                <input type="text" name="name" placeholder="Project Name">
+            </div>
+            <div class="field">
+                <label>host_group</label>
+                <input type="text" name="host_group" placeholder="host_group">
+            </div>
+            <div class="field">
+                <label>host_names</label>
+                <input type="text" name="host_names" placeholder="host_names">
+            </div>
+
+            <div class="field">
+                <label>description</label>
+                <textarea type="text" name="description" placeholder="description"></textarea>
+            </div>
+            <button class="ui button" type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+
+<div class="ui modal project update">
+    <i class="close icon"></i>
+    <div class="header">
+        添加项目
+    </div>
+
+    <div class="content">
+        <form class="ui form">
+            <div class="field">
+                <label>Project Name</label>
+                <input type="text" name="name" placeholder="Project Name">
+            </div>
+            <div class="field">
+                <label>host_group</label>
+                <input type="text" name="host_group" placeholder="host_group">
+            </div>
+            <div class="field">
+                <label>host_names</label>
+                <input type="text" name="host_names" placeholder="host_names">
+            </div>
+            <div class="field">
+                <label>description</label>
+                <textarea type="text" name="description" placeholder="description"></textarea>
+            </div>
+        </form>
+        <div class="header">
+            <button class="ui button" onclick='onUpdateSubmit()'>Submit</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function onDelete(url) {
+        $.ajax({
+            type: "DELETE",
+            url: url,
+            context: document.body,
+            success: function (data) {
+                console.log(data);
+                window.location.href = "/project";
+                {#                $(this).addClass("done");#}
+            }
+        }).done(function () {
+            $(this).addClass("done");
+        });
+    }
+
+    function onUpdate(url) {
+        $('.ui.modal.project.update').modal('show');
+
+        $.ajax({
+            type: "GET",
+            url: url + "?data_type=json",
+            context: document.body,
+            success: function (t) {
+                $('.ui.modal.project.update input[name=name]').val(t.name);
+                $('.ui.modal.project.update input[name=host_group]').val(t.host_group);
+                $('.ui.modal.project.update input[name=host_names]').val(t.host_names);
+                $('.ui.modal.project.update  textarea').val(t.description);
+            }
+        }).done(function () {
+        });
+        $('.ui.modal.project.update').attr("action", url);
+    }
+    function onUpdateSubmit() {
+        task = $('.ui.modal.project.update');
+        $.ajax({
+            type: "PATCH",
+            url: task.attr("action") + "?" + $('.ui.modal.project.update form').serialize(),
+            context: document.body,
+            success: function (data) {
+                if (data == "ok") {
+                    window.location.href = task.attr("action")
+                } else {
+                    window.location.href = "/project"
+                }
+            }
+        }).done(function () {
+            task.modal('hide')
+            task.attr("action", disable);
+        });
+    }
+
+    function onCopy(url) {
+        $.ajax({
+            type: "PUT",
+            url: url,
+            context: document.body,
+            success: function (data) {
+                if (data == "ok") {
+                    window.location.href = "/project"
+                } else {
+                    window.location.href = "/"
+                }
+            }
+        }).done(function () {
+        });
+    }
+
+    var ws = withSockJS("/ws", function (ws) {
+        ws.on("open", function (msg) {
+            console.log("open");
+            ws.emit("echo", "open");
+        }).on("hello", function (msg) {
+            console.log(msg);
+        }).on("echo", function (msg) {
+            ws.emit("hello", JSON.stringify({
+                "taskId": taskId,
+                "projectId": projectId,
+            }));
+        });
+    });
+
+    function run_task(pname, ptask) {
+        console.log(ws._listeners);
+        ws.emit(
+                "task",
+                JSON.stringify({
+                    project: pname,
+                    task: ptask
+                }),
+                function (msg) {
+                    var data = JSON.parse(msg);
+
+                    console.log(msg);
+
+                    $title = '<div class="title"><i class="dropdown icon"></i>' + data.name + '</div>';
+                    $content = '<div class="content"><p class="transition hidden"><pre><code class="bash hljs">' +
+                            data.data +
+                            '</code></pre></p></div>'
+
+                    $(".ui.segment.taskMessage .ui.styled.fluid.accordion").append($title);
+                    $(".ui.segment.taskMessage .ui.styled.fluid.accordion").append($content);
+
+                    hljs.initHighlightingOnLoad();
+                }
+        );
+    }
+</script>
+{% end %}
+

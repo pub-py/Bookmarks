@@ -1,0 +1,248 @@
+{% extends "../base.html" %}
+
+{% block title %}home{% end %}
+
+
+{% block body %}
+
+{% module Sidebar() %}
+{% module Menubar() %}
+
+
+<div class="pusher">
+
+    <div class="ui vertical stripe quote segment">
+
+        <div class="ui container">
+            <div class="introduction">
+                <div class="ui hidden divider"></div>
+                <div class="ui hidden divider"></div>
+                <div class="ui hidden divider"></div>
+                <div class="ui hidden divider"></div>
+                <div class="ui hidden divider"></div>
+            </div>
+        </div>
+
+        <div class="ui grid">
+            <div class="four wide column">
+                <div class="ui vertical fluid menu">
+
+                    {% for group,value in hosts %}
+                    <a class="teal item " data-tab="{{ group }}">
+                        {{ group }}
+                        <div class="ui teal left pointing label">{{ len(value) }}</div>
+                    </a>
+                    {% end %}
+                    <div class="item">
+                        <div class="ui transparent icon input">
+                            <input type="text" placeholder="Search mail...">
+                            <i class="search icon"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="twelve wide stretched column">
+
+                <button onclick="$('.ui.modal.host.add').modal('show');" class="ui green button">添加主机</button>
+
+                {% for group,host in hosts %}
+                <div class="ui tab segment" data-tab="{{ group }}">
+                    <div class="ui segment">
+                        <h3 class="ui header">主机列表</h3>
+
+                        <table class="ui inverted blue selectable celled right aligned table">
+                            <thead>
+                            <th class="left aligned">name</th>
+                            <th class="left aligned">ip</th>
+                            <th class="left aligned">port</th>
+                            <th class="left aligned">删除</th>
+                            <th class="left aligned">修改</th>
+                            <th class="left aligned">复制</th>
+                            <th class="left aligned">enter</th>
+                            </thead>
+                            <tbody>
+                            {% for h in host %}
+                            <tr>
+                                <td class="left aligned">{{ h.get("name") }}</td>
+                                <td class="left aligned">{{ h.get("ip") }}</td>
+                                <td class="left aligned">{{ h.get("port") }}</td>
+                                <td class="left aligned">
+                                    <button onclick="onDelete('/host/{{ h.get("id") }}')" class="ui red button">删除
+                                    </button>
+                                </td>
+
+                                <td class="left aligned">
+                                    <button onclick="onUpdate('/host/{{ h.get("id") }}');"
+                                            class="ui yellow button">
+                                        修改
+                                    </button>
+                                </td>
+
+                                <td class="left aligned">
+                                    <button onclick="onCopy('/host/{{ h.get("id") }}');" class="ui pink button">
+                                        复制
+                                    </button>
+                                </td>
+
+                                <td class="left aligned">
+                                    <a href='/terminal/{{ h.get("id") }}' class="ui pink button">
+                                        enter
+                                    </a>
+                                </td>
+
+                            </tr>
+                            {% end %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% end %}
+            </div>
+        </div>
+    </div>
+
+
+    <div class="ui modal host add">
+        <i class="close icon"></i>
+        <div class="header">
+            添加主机
+        </div>
+
+        <div class="content">
+            <form class="ui form" method="POST" action="/host">
+                <div class="field">
+                    <label>host Name</label>
+                    <input type="text" name="name"
+                           placeholder="host Name">
+                </div>
+                <div class="field">
+                    <label>ip</label>
+                    <input type="text" name="ip" placeholder="ip">
+                </div>
+                <div class="field">
+                    <label>port</label>
+                    <input type="text" name="port" placeholder="port">
+                </div>
+                <div class="field">
+                    <label>group</label>
+                    <input type="text" name="group"
+                           placeholder="group">
+                </div>
+                <div class="field">
+                    <label>password</label>
+                    <input type="password" name="password"
+                           placeholder="password">
+                </div>
+                <button class="ui button" type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="ui modal host update">
+        <i class="close icon"></i>
+        <div class="header">
+            修改主机
+        </div>
+
+        <div class="content">
+            <form class="ui form">
+                <div class="field">
+                    <label>host Name</label>
+                    <input type="text" name="name" placeholder="host Name">
+                </div>
+                <div class="field">
+                    <label>ip</label>
+                    <input type="text" name="ip" placeholder="ip">
+                </div>
+                <div class="field">
+                    <label>port</label>
+                    <input type="text" name="port" placeholder="port">
+                </div>
+                <div class="field">
+                    <label>group</label>
+                    <input type="text" name="group" placeholder="group">
+                </div>
+                <div class="field">
+                    <label>password</label>
+                    <input type="password" name="password" placeholder="password">
+                </div>
+            </form>
+        </div>
+        <div class="header">
+            <button class="ui button" onclick='onUpdateSubmit()'>Submit</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function onDelete(url) {
+        $.ajax({
+            type: "DELETE",
+            url: url,
+            context: document.body,
+            success: function (data) {
+                console.log(data);
+                window.location.href = "/host"
+                {#                $(this).addClass("done");#}
+            }
+        }).done(function () {
+            $(this).addClass("done");
+        });
+    }
+
+    function onUpdate(url) {
+        $('.ui.modal.host.update').modal('show');
+
+        $.ajax({
+            type: "GET",
+            url: url + "?data_type=json",
+            context: document.body,
+            success: function (host) {
+                $('.ui.modal.host.update input[name=name]').val(host.name);
+                $('.ui.modal.host.update input[name=ip]').val(host.ip);
+                $('.ui.modal.host.update input[name=port]').val(host.port);
+                $('.ui.modal.host.update input[name=group]').val(host.group);
+                $('.ui.modal.host.update input[name=password]').val(host.password);
+            }
+        }).done(function () {
+        });
+        $('.ui.modal.host.update').attr("action", url);
+    }
+    function onUpdateSubmit() {
+        $.ajax({
+            type: "PATCH",
+            url: $('.ui.modal.host.update').attr("action") + "?" + $('.ui.modal.host.update form').serialize(),
+            context: document.body,
+            success: function (data) {
+                if (data == "ok") {
+                    console.log(data);
+                    window.location.href = "/host";
+                }
+                window.location.href = "/host";
+            }
+        }).done(function () {
+            $('.ui.modal.host.update').modal('hide')
+        });
+    }
+
+    function onCopy(url) {
+        $.ajax({
+            type: "PUT",
+            url: url,
+            context: document.body,
+            success: function (data) {
+                if (data == "ok") {
+                    window.location.href = "/host"
+                } else {
+                    window.location.href = "/"
+                }
+            }
+        }).done(function () {
+        });
+    }
+</script>
+{% end %}
+

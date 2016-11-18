@@ -1,0 +1,87 @@
+{% extends "../base.html" %}
+
+{% block title %}home{% end %}
+
+
+{% block body %}
+
+{% module Sidebar() %}
+
+{% module Menubar() %}
+
+
+<div class="pusher">
+    <div class="ui grid container">
+        <div class="introduction">
+            <div class="ui hidden divider"></div>
+            <div class="ui hidden divider"></div>
+            <div class="ui hidden divider"></div>
+            <div class="ui hidden divider"></div>
+            <div class="ui hidden divider"></div>
+        </div>
+
+        <div class="row">
+            <div class="stretched column">
+                <button onclick="$('.ui.modal.project.add').modal('show');" class="ui yellow button">添加项目</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="column">
+                <div class="ui vertical stripe quote segment">
+                    <div class="ui three stackable doubling cards">
+                        {% for project in projects %}
+                        <a class="ui card" href="/project/{{ project.get('id')}}">
+                            <div class="header">
+                                <i class="paw icon"></i>
+                                {{ project.get("name") }}
+                                <i class="paw icon"></i>
+                            </div>
+                            <div class="content">
+                                <div class="header">{{ project.get("name") }}</div>
+                                <div class="description">
+                                    {{ project.get("description","项目描述") }}
+                                </div>
+                            </div>
+                        </a>
+                        {% end %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="ui modal project add">
+    <i class="close icon"></i>
+    <div class="header">
+        添加项目
+    </div>
+
+    <div class="content">
+        <form class="ui form" method="POST" action="/project">
+            <div class="field">
+                <label>Project Name</label>
+                <input type="text" name="name" placeholder="Project Name">
+            </div>
+            <div class="field">
+                <label>host_group</label>
+                <input type="text" name="host_group" placeholder="host_group">
+            </div>
+            <div class="field">
+                <label>host_names</label>
+                <input type="text" name="host_names" placeholder="host_names">
+            </div>
+            <div class="field">
+                <label>description</label>
+                <textarea type="text" name="description" placeholder="description"></textarea>
+            </div>
+            <button class="ui button" type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+
+
+{% end %}
+

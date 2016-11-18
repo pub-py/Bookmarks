@@ -1,0 +1,27 @@
+{% extends "./base.html" %}
+
+{% block title %}home{% end %}
+
+
+{% block body %}
+
+{% module Sidebar() %}
+{% module Menubar() %}
+
+<div class="pusher">
+    <div class="ui hidden divider"></div>
+    <div class="ui hidden divider"></div>
+    <div class="ui hidden divider"></div>
+    <div class="ui hidden divider"></div>
+    <div class="ui hidden divider"></div>
+    <div class="ui grid container">
+        <div class="row">
+            <div class="column">
+                <div class="ui error message">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% end %}

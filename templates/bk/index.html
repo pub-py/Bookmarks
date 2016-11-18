@@ -1,0 +1,138 @@
+{% extends "../base.html" %}
+
+{% block title %}home{% end %}
+
+
+{% block body %}
+{% module Sidebar() %}
+{% module Menubar() %}
+<div class="pusher">
+    <div class="ui container">
+        <div class="ui hidden divider"></div>
+        <div class="ui hidden divider"></div>
+        <div class="ui hidden divider"></div>
+    </div>
+
+
+    <div class="ui middle aligned six column cards">
+
+        <div class="column">
+            <div class="ui vertical menu">
+                <div class="item">
+                    <div class="ui transparent icon input">
+                        <input type="text" placeholder="Search mail...">
+                        <i class="search icon"></i>
+                    </div>
+                </div>
+                {% for bkm in bkms %}
+                <a class="item" bkm-data="{{bkm['bkm_pth']}}">
+                    {{ bkm["bkm_pth"].split("-**-")[-1] }}
+                    <div class="ui teal left pointing label">{{bkm['count']}}</div>
+                </a>
+                {% end %}
+            </div>
+        </div>
+    </div>
+
+    <div class="ui container">
+        <div class="ui hidden divider"></div>
+        <div class="ui hidden divider"></div>
+        <div class="ui hidden divider"></div>
+    </div>
+    {% module Footer()%}
+</div>
+<script type="text/javascript">
+
+
+    const delimiter = "-**-";
+
+    String.prototype.format = function (args) {
+        var result = this;
+        if (arguments.length > 0) {
+            if (arguments.length == 1 && typeof (args) == "object") {
+                for (var key in args) {
+                    if (args[key] != undefined) {
+                        var reg = new RegExp("({" + key + "})", "g");
+                        result = result.replace(reg, args[key]);
+                    }
+                }
+            }
+            else {
+                for (var i = 0; i < arguments.length; i++) {
+                    if (arguments[i] != undefined) {
+                        var reg = new RegExp("({[" + i + "]})", "g");
+                        result = result.replace(reg, arguments[i]);
+                    }
+                }
+            }
+        }
+        return result;
+    };
+
+
+    function click1(that) {
+        $(that).parent().find("a").removeClass("teal active");
+        $(that).addClass("teal active");
+
+        $(that).parent().parent().nextAll().remove();
+        $.get("/bk/{0}".format($(that).attr("bkm-data").trim()), function (data, status) {
+            console.log(status);
+            console.log(JSON.parse(data));
+
+
+            var folder_data = '';
+            for (var bkm of JSON.parse(data)) {
+                let bkm_pth = bkm.bkm_pth;
+                let href = bkm.href;
+                let folder = bkm.folder;
+                let count = bkm.count;
+
+                console.log(bkm);
+                if (folder) {
+                    folder_data += '<a class="item" bkm-data="{0}">{1}<div class="ui label">{2}</div></a>'.format(
+                            bkm_pth,
+                            bkm_pth.split(delimiter).pop(),
+                            count
+                    );
+                }
+            }
+
+
+            var link_data = '';
+            for (var bkm of JSON.parse(data)) {
+                let bkm_pth = bkm.bkm_pth.split(delimiter).pop();
+                let href = bkm.href;
+                let folder = bkm.folder;
+
+                if (!folder && bkm_pth != 'title') {
+                    link_data += '<a class="item" bkm-data="{0}" href="{1}" target="_blank">{2}</a>'.format(
+                            bkm.bkm_pth,
+                            href,
+                            bkm_pth
+                    );
+                }
+            }
+
+            var _data = '<div class="column"><div class="ui vertical menu">{0}</div></div>';
+            if (link_data != '') {
+                link_data = _data.format(link_data)
+            }
+            if (folder_data != '') {
+                folder_data = _data.format(folder_data)
+            }
+
+
+            $(that).parent().parent().parent().append(folder_data + link_data);
+            $(that).parent().parent().nextAll().find("a").click(function () {
+                click1(this);
+            });
+        });
+    }
+    $(".ui.vertical.menu a").click(function () {
+        click1(this);
+    });
+
+</script>
+
+
+{% end %}
